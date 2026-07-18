@@ -9,6 +9,7 @@ var storeWhatsApp = "+260970000000"; // Fallback phone
 var allProducts = [];
 var cart = [];
 var selectedCategory = 'all';
+var zmwToUsdRate = 0.038; // Default fallback rate (1 ZMW to USD)
 
 function initStoreSupabase() {
     try {
@@ -19,11 +20,28 @@ function initStoreSupabase() {
     }
 }
 
+// DYNAMIC INTERNATIONAL EXCHANGE RATE FETCH
+function fetchExchangeRates() {
+    fetch('https://open.er-api.com/v6/latest/ZMW')
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.rates && data.rates.USD) {
+                zmwToUsdRate = data.rates.USD;
+                console.log('💱 Live Rates Integrated: 1 ZMW = $' + zmwToUsdRate + ' USD');
+                // Refresh UI containers to immediately show computed USD tags
+                renderFilteredProducts();
+                renderCartContents();
+            }
+        })
+        .catch(err => {
+            console.warn('⚠️ Foreign exchange feed unreachable. Operating on fallback system rate.', err);
+        });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     initStoreSupabase();
     loadCartFromMemory();
-    
-    // Fetch critical settings and dynamic database collections
+    fetchExchangeRates(); // Fire live currency calculation engine
     fetchStorefrontSettings();
     fetchStorefrontProducts();
 
@@ -185,6 +203,9 @@ function renderFilteredProducts() {
     }
 
     filtered.forEach(function (product) {
+        var basePrice = parseFloat(product.price) || 0;
+        var calculatedUsd = basePrice * zmwToUsdRate;
+
         var card = document.createElement('div');
         card.className = 'product-card';
         card.innerHTML = `
@@ -196,7 +217,10 @@ function renderFilteredProducts() {
                 <h3 class="product-title">${product.name}</h3>
                 <p class="product-desc">${product.description}</p>
                 <div class="product-action-row">
-                    <span class="product-price">${product.price} ZMW</span>
+                    <div class="price-stack" style="display: flex; flex-direction: column;">
+                        <span class="product-price" style="font-weight: 600; font-size: 16px;">${basePrice.toFixed(2)} ZMW</span>
+                        <span class="usd-price-tag" style="font-size: 12px; color: #8a8f98; margin-top: 2px;">~$${calculatedUsd.toFixed(2)} USD</span>
+                    </div>
                     <button onclick="addProductToCart(${product.id})" class="buy-btn">Add to Cart</button>
                 </div>
             </div>
@@ -281,9 +305,6 @@ function addProductToCart(productId) {
         });
     }
     saveCartAndSync();
-    
-    // PEACE FIX: Commented out so it adds silently without opening the drawer!
-    // toggleCartDrawer(true);
 }
 
 function updateItemQuantity(productId, delta) {
@@ -315,9 +336,8 @@ function renderCartContents() {
     container.innerHTML = '';
 
     var totalItemCount = 0;
-    var totalPrice = 0;
+    var totalPriceZMW = 0;
 
-    // Safety handling for missing header badge element
     var headerBadge = document.getElementById('cart-badge-count');
 
     if (cart.length === 0) {
@@ -330,13 +350,13 @@ function renderCartContents() {
         lucide.createIcons();
         if (headerBadge) headerBadge.innerText = "0";
         document.getElementById('floating-cart-count').innerText = "0";
-        document.getElementById('cart-total-price').innerText = "0 ZMW";
+        document.getElementById('cart-total-price').innerText = "0.00 ZMW";
         return;
     }
 
     cart.forEach(function (item) {
         totalItemCount += item.quantity;
-        totalPrice += (item.price * item.quantity);
+        totalPriceZMW += (item.price * item.quantity);
 
         var cartItemRow = document.createElement('div');
         cartItemRow.className = 'cart-item-row';
@@ -355,9 +375,11 @@ function renderCartContents() {
         container.appendChild(cartItemRow);
     });
 
+    var totalPriceUSD = totalPriceZMW * zmwToUsdRate;
+
     if (headerBadge) headerBadge.innerText = totalItemCount;
     document.getElementById('floating-cart-count').innerText = totalItemCount;
-    document.getElementById('cart-total-price').innerText = totalPrice.toFixed(2) + " ZMW";
+    document.getElementById('cart-total-price').innerText = totalPriceZMW.toFixed(2) + " ZMW (~$" + totalPriceUSD.toFixed(2) + " USD)";
     lucide.createIcons();
 }
 
@@ -373,15 +395,17 @@ function checkoutViaWhatsApp() {
         "---------------------------------------"
     ];
 
-    var totalCost = 0;
+    var totalCostZMW = 0;
     cart.forEach(function (item) {
-        var cost = item.price * item.quantity;
-        totalCost += cost;
-        messageLines.push(`• *${item.name}* x${item.quantity} (${cost.toFixed(2)} ZMW)`);
+        var costZMW = item.price * item.quantity;
+        totalCostZMW += costZMW;
+        messageLines.push(`• *${item.name}* x${item.quantity} (${costZMW.toFixed(2)} ZMW)`);
     });
 
+    var totalCostUSD = totalCostZMW * zmwToUsdRate;
+
     messageLines.push("---------------------------------------");
-    messageLines.push(`*Estimated Total:* ${totalCost.toFixed(2)} ZMW`);
+    messageLines.push(`*Estimated Total:* ${totalCostZMW.toFixed(2)} ZMW (~$${totalCostUSD.toFixed(2)} USD)`);
     messageLines.push("\nIs this collection ready for confirmation?");
 
     var formattedMsg = encodeURIComponent(messageLines.join("\n"));
