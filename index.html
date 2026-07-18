@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dreamworth Stores — Premium Collection</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="store-style.css">
+    <!-- Lucide Icons for clean UI symbols -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+    <!-- 1. NAVIGATION HEADER -->
+    <header class="store-header">
+        <div class="header-container">
+            <a href="#" class="store-logo">DREAMWORTH</a>
+            <nav class="store-nav">
+                <a href="#catalog">Catalog</a>
+                <a href="#contact">Contact</a>
+                <button class="cart-trigger-btn" onclick="toggleCartDrawer(true)">
+                    <i data-lucide="shopping-bag"></i>
+                    <span id="cart-badge-count" class="cart-badge">0</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 2. HERO SHOWCASE SECTION -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <span class="hero-tag">Curated Luxury</span>
+            <h1>Define Your Aesthetics</h1>
+            <p>Explore exclusive, premium designs tailored to elevate your everyday collection. Synced directly with our luxury vault.</p>
+            <a href="#catalog" class="cta-btn">Browse Collection</a>
+        </div>
+    </section>
+
+    <!-- 3. INTERACTIVE CATALOG -->
+    <main id="catalog" class="catalog-section">
+        <div class="section-header">
+            <h2>Our Collections</h2>
+            <p>Select a category to filter active inventory items.</p>
+        </div>
+
+        <!-- NEW: PREMIUM SEARCH AND SORT SYSTEM -->
+        <div class="catalog-controls">
+            <div class="search-wrapper">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" id="storefront-search" placeholder="Search the collection...">
+            </div>
+            <div class="sort-wrapper">
+                <select id="storefront-sort">
+                    <option value="default">Sort: Featured</option>
+                    <option value="low-high">Price: Low to High</option>
+                    <option value="high-low">Price: High to Low</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Dynamic Category Pills -->
+        <div class="category-filters">
+            <button class="filter-btn active" data-category="all">All Items</button>
+            <button class="filter-btn" data-category="apparel">Apparel</button>
+            <button class="filter-btn" data-category="tech">Tech & Devices</button>
+            <button class="filter-btn" data-category="home">Home & Lifestyle</button>
+            <button class="filter-btn" data-category="lifestyle">Lifestyle</button>
+        </div>
+
+        <!-- Dynamic Products Grid -->
+        <div class="products-grid" id="public-products-grid">
+            <!-- Dynamic products or skeleton loaders inject here -->
+        </div>
+    </main>
+
+    <!-- NEW: FLOATING CART BUTTON (BOTTOM RIGHT) -->
+    <button class="floating-cart-trigger" onclick="toggleCartDrawer(true)">
+        <i data-lucide="shopping-bag"></i>
+        <span id="floating-cart-count" class="cart-badge">0</span>
+    </button>
+
+    <!-- NEW: SLIDING PREMIUM CART DRAWER -->
+    <div id="cart-drawer-overlay" class="cart-overlay" onclick="toggleCartDrawer(false)"></div>
+    <div id="cart-drawer" class="cart-drawer">
+        <div class="drawer-header">
+            <h3>Your Cart</h3>
+            <button class="close-drawer-btn" onclick="toggleCartDrawer(false)">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        <div id="cart-items-container" class="cart-items-list">
+            <!-- Dynamic cart items list here -->
+        </div>
+        <div class="cart-drawer-footer">
+            <div class="cart-summary-row">
+                <span>Estimated Total:</span>
+                <span id="cart-total-price">0 ZMW</span>
+            </div>
+            <button onclick="checkoutViaWhatsApp()" class="checkout-btn">
+                <i data-lucide="send"></i> Checkout via WhatsApp
+            </button>
+        </div>
+    </div>
+
+    <!-- 4. CUSTOMER INQUIRY TOUCHPOINT -->
+    <section id="contact" class="contact-section">
+        <div class="contact-container">
+            <div class="contact-info">
+                <h2>Get in Touch</h2>
+                <p>Have questions about sizing, materials, or custom bulk orders? Drop us a line, and our support channel will respond to your dashboard shortly.</p>
+                
+                <div class="social-channels">
+                    <!-- Dynamic contact nodes render here -->
+                </div>
+            </div>
+
+            <div class="contact-form-card">
+                <h3>Direct Message</h3>
+                <form id="public-contact-form">
+                    <div class="form-group">
+                        <label for="contact-name">Full Name</label>
+                        <input type="text" id="contact-name" placeholder="Melisa Planks" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-email">Email Address</label>
+                        <input type="email" id="contact-email" placeholder="melisa***@gmail.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-message">Your Message/Add Whatsapp number(optinal)</label>
+                        <textarea id="contact-message" rows="4" placeholder="I'm looking for..." required></textarea>
+                    </div>
+                    <button type="submit" class="submit-message-btn" id="send-msg-btn">Send Secure Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. FOOTER -->
+    <footer class="store-footer">
+        <p>&copy; 2026 Dreamworth Stores. Designed for elite aesthetics.</p>
+    </footer>
+
+    <!-- Cloud dependencies & logic -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="store-app.js"></script>
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
