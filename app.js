@@ -169,11 +169,14 @@ function renderFilteredProducts() {
     }
 
     // Sort Results
-    var sortVal = document.getElementById('storefront-sort').value;
-    if (sortVal === 'low-high') {
-        filtered.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-    } else if (sortVal === 'high-low') {
-        filtered.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+    var sortVal = document.getElementById('storefront-sort');
+    if (sortVal) {
+        var sortValue = sortVal.value;
+        if (sortValue === 'low-high') {
+            filtered.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+        } else if (sortValue === 'high-low') {
+            filtered.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+        }
     }
 
     if (filtered.length === 0) {
@@ -246,9 +249,9 @@ function fetchStorefrontSettings() {
         });
 }
 
-// ============================================================
+// --------------------------------------------------------
 // 5. SHOPPING CART ENGINE
-// ============================================================
+// --------------------------------------------------------
 function toggleCartDrawer(open) {
     var drawer = document.getElementById('cart-drawer');
     var overlay = document.getElementById('cart-drawer-overlay');
@@ -278,7 +281,9 @@ function addProductToCart(productId) {
         });
     }
     saveCartAndSync();
-    toggleCartDrawer(true);
+    
+    // PEACE FIX: Commented out so it adds silently without opening the drawer!
+    // toggleCartDrawer(true);
 }
 
 function updateItemQuantity(productId, delta) {
@@ -312,6 +317,9 @@ function renderCartContents() {
     var totalItemCount = 0;
     var totalPrice = 0;
 
+    // Safety handling for missing header badge element
+    var headerBadge = document.getElementById('cart-badge-count');
+
     if (cart.length === 0) {
         container.innerHTML = `
             <div class="empty-cart-state">
@@ -320,7 +328,7 @@ function renderCartContents() {
             </div>
         `;
         lucide.createIcons();
-        document.getElementById('cart-badge-count').innerText = "0";
+        if (headerBadge) headerBadge.innerText = "0";
         document.getElementById('floating-cart-count').innerText = "0";
         document.getElementById('cart-total-price').innerText = "0 ZMW";
         return;
@@ -347,7 +355,7 @@ function renderCartContents() {
         container.appendChild(cartItemRow);
     });
 
-    document.getElementById('cart-badge-count').innerText = totalItemCount;
+    if (headerBadge) headerBadge.innerText = totalItemCount;
     document.getElementById('floating-cart-count').innerText = totalItemCount;
     document.getElementById('cart-total-price').innerText = totalPrice.toFixed(2) + " ZMW";
     lucide.createIcons();
